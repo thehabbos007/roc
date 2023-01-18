@@ -446,16 +446,21 @@ pub fn new_backend_64bit<
     }
 }
 
+macro_rules! quadword_and_smaller_signed {
+    () => {
+        IntWidth::I64 | IntWidth::I32 | IntWidth::I16 | IntWidth::I8
+    };
+}
+
+macro_rules! quadword_and_smaller_unsigned {
+    () => {
+        IntWidth::U64 | IntWidth::U32 | IntWidth::U16 | IntWidth::U8
+    };
+}
+
 macro_rules! quadword_and_smaller {
     () => {
-        IntWidth::I64
-            | IntWidth::U64
-            | IntWidth::I32
-            | IntWidth::U32
-            | IntWidth::I16
-            | IntWidth::U16
-            | IntWidth::I8
-            | IntWidth::U8
+        quadword_and_smaller_signed!() | quadword_and_smaller_unsigned!()
     };
 }
 
@@ -1090,7 +1095,7 @@ impl<
         arg_layout: &InLayout<'a>,
     ) {
         match self.layout_interner.get(*arg_layout) {
-            Layout::Builtin(Builtin::Int(IntWidth::I64)) => {
+            Layout::Builtin(Builtin::Int(quadword_and_smaller_signed!())) => {
                 let dst_reg = self.storage_manager.claim_general_reg(&mut self.buf, dst);
                 let src1_reg = self
                     .storage_manager
@@ -1100,7 +1105,7 @@ impl<
                     .load_to_general_reg(&mut self.buf, src2);
                 ASM::ilt_reg64_reg64_reg64(&mut self.buf, dst_reg, src1_reg, src2_reg);
             }
-            Layout::Builtin(Builtin::Int(IntWidth::U64)) => {
+            Layout::Builtin(Builtin::Int(quadword_and_smaller_unsigned!())) => {
                 let dst_reg = self.storage_manager.claim_general_reg(&mut self.buf, dst);
                 let src1_reg = self
                     .storage_manager
@@ -1122,7 +1127,7 @@ impl<
         arg_layout: &InLayout<'a>,
     ) {
         match self.layout_interner.get(*arg_layout) {
-            Layout::Builtin(Builtin::Int(IntWidth::I64)) => {
+            Layout::Builtin(Builtin::Int(quadword_and_smaller_signed!())) => {
                 let dst_reg = self.storage_manager.claim_general_reg(&mut self.buf, dst);
                 let src1_reg = self
                     .storage_manager
@@ -1132,7 +1137,7 @@ impl<
                     .load_to_general_reg(&mut self.buf, src2);
                 ASM::igt_reg64_reg64_reg64(&mut self.buf, dst_reg, src1_reg, src2_reg);
             }
-            Layout::Builtin(Builtin::Int(IntWidth::U64)) => {
+            Layout::Builtin(Builtin::Int(quadword_and_smaller_unsigned!())) => {
                 let dst_reg = self.storage_manager.claim_general_reg(&mut self.buf, dst);
                 let src1_reg = self
                     .storage_manager

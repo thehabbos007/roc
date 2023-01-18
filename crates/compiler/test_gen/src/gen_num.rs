@@ -1342,7 +1342,7 @@ fn bitwise_or() {
 }
 
 #[test]
-#[cfg(any(feature = "gen-llvm", feature = "gen-wasm"))]
+#[cfg(any(feature = "gen-llvm", feature = "gen-wasm", feature = "gen-dev"))]
 fn lt_u8() {
     assert_evals_to!("1u8 < 2u8", true, bool);
     assert_evals_to!("1u8 < 1u8", false, bool);
@@ -1362,7 +1362,7 @@ fn lte_u8() {
 }
 
 #[test]
-#[cfg(any(feature = "gen-llvm", feature = "gen-wasm"))]
+#[cfg(any(feature = "gen-llvm", feature = "gen-wasm", feature = "gen-dev"))]
 fn gt_u8() {
     assert_evals_to!("2u8 > 1u8", true, bool);
     assert_evals_to!("2u8 > 2u8", false, bool);
