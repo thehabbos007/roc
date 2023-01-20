@@ -695,6 +695,14 @@ trait Backend<'a> {
                 );
                 self.build_list_get_unsafe(sym, &args[0], &args[1], ret_layout)
             }
+            LowLevel::ListAppendUnsafe => {
+                debug_assert_eq!(
+                    2,
+                    args.len(),
+                    "ListAppendUnsafe: expected to have exactly two arguments"
+                );
+                self.build_list_append_unsafe(sym, args, arg_layouts, ret_layout)
+            }
             LowLevel::ListReplaceUnsafe => {
                 debug_assert_eq!(
                     3,
@@ -768,7 +776,7 @@ trait Backend<'a> {
                 self.build_eq(sym, &args[0], &Symbol::DEV_TMP, &arg_layouts[0]);
                 self.free_symbol(&Symbol::DEV_TMP)
             }
-            Symbol::LIST_GET | Symbol::LIST_SET | Symbol::LIST_REPLACE => {
+            Symbol::LIST_GET | Symbol::LIST_SET | Symbol::LIST_REPLACE | Symbol::LIST_APPEND => {
                 // TODO: This is probably simple enough to be worth inlining.
                 let layout_id = LayoutIds::default().get(func_sym, ret_layout);
                 let fn_name = self.symbol_to_string(func_sym, layout_id);
@@ -787,11 +795,13 @@ trait Backend<'a> {
                 let bool_layout = Layout::BOOL;
                 self.load_literal(&Symbol::DEV_TMP, &bool_layout, &Literal::Bool(true));
                 self.return_symbol(&Symbol::DEV_TMP, &bool_layout);
+                self.free_symbol(&Symbol::DEV_TMP);
             }
             Symbol::BOOL_FALSE => {
                 let bool_layout = Layout::BOOL;
                 self.load_literal(&Symbol::DEV_TMP, &bool_layout, &Literal::Bool(false));
                 self.return_symbol(&Symbol::DEV_TMP, &bool_layout);
+                self.free_symbol(&Symbol::DEV_TMP);
             }
             _ => todo!("the function, {:?}", func_sym),
         }
@@ -941,6 +951,15 @@ trait Backend<'a> {
         dst: &Symbol,
         list: &Symbol,
         index: &Symbol,
+        ret_layout: &InLayout<'a>,
+    );
+
+    /// build_list_append_unsafe returns a new list with a given element appended.
+    fn build_list_append_unsafe(
+        &mut self,
+        dst: &Symbol,
+        args: &'a [Symbol],
+        arg_layouts: &[InLayout<'a>],
         ret_layout: &InLayout<'a>,
     );
 
