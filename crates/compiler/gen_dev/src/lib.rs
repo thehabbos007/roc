@@ -679,6 +679,14 @@ trait Backend<'a> {
                 );
                 self.build_list_len(sym, &args[0])
             }
+            LowLevel::ListReserve => {
+                debug_assert_eq!(
+                    2,
+                    args.len(),
+                    "ListReserve: expected to have exactly two arguments"
+                );
+                self.build_list_reserve(sym, args, arg_layouts, ret_layout)
+            }
             LowLevel::ListGetUnsafe => {
                 debug_assert_eq!(
                     2,
@@ -917,6 +925,15 @@ trait Backend<'a> {
 
     /// build_list_len returns the length of a list.
     fn build_list_len(&mut self, dst: &Symbol, list: &Symbol);
+
+    /// build_list_replace_unsafe returns the old element and new list with the list having the new element inserted.
+    fn build_list_reserve(
+        &mut self,
+        dst: &Symbol,
+        args: &'a [Symbol],
+        arg_layouts: &[InLayout<'a>],
+        ret_layout: &InLayout<'a>,
+    );
 
     /// build_list_get_unsafe loads the element from the list at the index.
     fn build_list_get_unsafe(
