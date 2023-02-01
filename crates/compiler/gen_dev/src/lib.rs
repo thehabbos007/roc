@@ -284,28 +284,22 @@ trait Backend<'a> {
                         if let LowLevelWrapperType::CanBeReplacedBy(lowlevel) =
                             LowLevelWrapperType::from_symbol(func_sym.name())
                         {
-                            self.build_run_low_level(
+                            return self.build_run_low_level(
                                 sym,
                                 &lowlevel,
                                 arguments,
                                 arg_layouts,
                                 ret_layout,
-                            )
-                        } else if self.defined_in_app_module(func_sym.name()) {
-                            let layout_id = LayoutIds::default().get(func_sym.name(), layout);
-                            let fn_name = self.symbol_to_string(func_sym.name(), layout_id);
-                            // Now that the arguments are needed, load them if they are literals.
-                            self.load_literal_symbols(arguments);
-                            self.build_fn_call(sym, fn_name, arguments, arg_layouts, ret_layout)
-                        } else {
-                            self.build_builtin(
-                                sym,
-                                func_sym.name(),
-                                arguments,
-                                arg_layouts,
-                                ret_layout,
-                            )
+                            );
                         }
+
+                        let layout_id = LayoutIds::default().get(func_sym.name(), layout);
+                        let fn_name = self.symbol_to_string(func_sym.name(), layout_id);
+
+                        // Now that the arguments are needed, load them if they are literals.
+                        self.load_literal_symbols(arguments);
+
+                        self.build_fn_call(sym, fn_name, arguments, arg_layouts, ret_layout)
                     }
 
                     CallType::LowLevel { op: lowlevel, .. } => {
@@ -758,6 +752,13 @@ trait Backend<'a> {
                     "ListPrepend: expected to have exactly two arguments"
                 );
                 self.build_list_prepend(sym, args, arg_layouts, ret_layout)
+            }
+            LowLevel::ListMap
+            | LowLevel::ListMap2
+            | LowLevel::ListMap3
+            | LowLevel::ListMap4
+            | LowLevel::ListSortWith => {
+                internal_error!("HigherOrder lowlevels should not be handled here")
             }
             LowLevel::StrConcat => self.build_fn_call(
                 sym,
